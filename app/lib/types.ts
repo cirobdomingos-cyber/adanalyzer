@@ -15,7 +15,7 @@ export interface Metrics {
   conversions: string;
   cpa: string;
   roas: string;
-  adContext: string;
+  adContext?: string;
 }
 
 export const EMPTY_METRICS: Metrics = {
