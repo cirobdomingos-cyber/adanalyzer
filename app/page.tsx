@@ -176,6 +176,9 @@ function createDemoImage(
 
 // ---------------------------------------------------------------------------
 // Parse streamed JSON (handles leading/trailing whitespace and code fences)
+// and normalize the shape so the UI never crashes on a missing field.
+// Claude's streamed output can be truncated or omit fields; the UI assumes
+// arrays and score dims always exist, so we fill them in defensively here.
 // ---------------------------------------------------------------------------
 function parseAnalysisJson(raw: string): AnalysisResult {
   let cleaned = raw.trim();
@@ -183,7 +186,28 @@ function parseAnalysisJson(raw: string): AnalysisResult {
   if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
   }
-  return JSON.parse(cleaned) as AnalysisResult;
+  const parsed = JSON.parse(cleaned) as Partial<AnalysisResult>;
+
+  const emptyDim = { score: 0, summary: "" };
+  const scores = parsed.scores ?? ({} as Partial<AnalysisResult["scores"]>);
+
+  return {
+    overallScore: typeof parsed.overallScore === "number" ? parsed.overallScore : 0,
+    verdict: parsed.verdict ?? "Needs Improvement",
+    scores: {
+      hookStrength: scores.hookStrength ?? emptyDim,
+      visualClarity: scores.visualClarity ?? emptyDim,
+      ctaEffectiveness: scores.ctaEffectiveness ?? emptyDim,
+      copyVisualAlignment: scores.copyVisualAlignment ?? emptyDim,
+      audienceRelevance: scores.audienceRelevance ?? emptyDim,
+    },
+    diagnosis: parsed.diagnosis ?? "",
+    strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+    weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+    visualAnalysis: parsed.visualAnalysis ?? "",
+    variations: Array.isArray(parsed.variations) ? parsed.variations : [],
+    benchmarks: Array.isArray(parsed.benchmarks) ? parsed.benchmarks : [],
+  };
 }
 
 // ---------------------------------------------------------------------------
