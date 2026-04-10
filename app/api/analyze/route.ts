@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
   try {
     const stream = await client.messages.stream({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 3000,
+      max_tokens: 4096,
       system:
         "You are a senior paid media strategist with 10+ years of experience across Meta Ads, Google Ads, TikTok Ads, and LinkedIn Ads. You analyze ad creatives by examining the visual elements, copy, and campaign metrics to produce structured, actionable insights. You always respond with valid JSON — no markdown, no explanations outside the JSON. Be blunt and specific.",
       messages: [
