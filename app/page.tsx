@@ -188,6 +188,12 @@ function parseAnalysisJson(raw: string): AnalysisResult {
   }
   const parsed = JSON.parse(cleaned) as Partial<AnalysisResult>;
 
+  // Detect API error responses that parsed as valid JSON but aren't analysis
+  if ("error" in (parsed as Record<string, unknown>)) {
+    const msg = (parsed as Record<string, unknown>).error;
+    throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
+  }
+
   const emptyDim = { score: 0, summary: "" };
   const scores = parsed.scores ?? ({} as Partial<AnalysisResult["scores"]>);
 
